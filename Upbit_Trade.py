@@ -67,6 +67,12 @@ def get_yesterday_ma(ticker, days, interval = "day"):
 
     return float(ma[-2])
 
+def get_start_time(ticker):
+    """시작 시간 조회"""
+    df = pyupbit.get_ohlcv(ticker, interval="day", count=1)
+    start_time = df.index[0]
+    return start_time
+
 #%%
 # ticker = "KRW-DOGE"
 # k = 0.525
@@ -87,29 +93,31 @@ time_now = datetime.datetime.now()
 time_midnight = datetime.datetime(time_now.year, time_now.month, time_now.day) + datetime.timedelta(1)
 
 while True:
-    # try:
-    time_now = datetime.datetime.now()
+    try:
+        time_now = datetime.datetime.now()
+        start_tim = get_start_time(ticker)
+        end_time = start_time + datetime.timedelta(days = 1)
 
-    if time_midnight < time_now < time_midnight + datetime.timedelta(seconds = 10):
-        target_price = get_target_price(ticker, k = k)
-        print(f"TARGET PRICE: {target_price}")
-        time_midnight = datetime.datetime(time_now.year, time_now.month, time_now.day) + datetime.timedelta(1)
+        if start_time < time_now < end_time - datetime.timedelta(seconds = 10):
+            target_price = get_target_price(ticker, k = k)
+            print(f"TARGET PRICE: {target_price}")
 
-        sell_crypto_currency(ticker)
+            sell_crypto_currency(ticker)
 
-    current_price = pyupbit.get_current_price(ticker)
-    if (current_price >= target_price) & (current_price >= get_yesterday_ma(ticker, 5)):
-        buy_crypto_currency(ticker)
+        current_price = pyupbit.get_current_price(ticker)
+        if (current_price >= target_price) & (current_price >= get_yesterday_ma(ticker, 5)):
+            krw = get_balance("KRW")
+            if krw > 5000:
+                buy_crypto_currency(ticker)
 
-    avg_price = float(upbit.get_balances()[-1]["avg_buy_price"])
-    if (current_price < avg_price * 0.98):
-        sell_crypto_currency(ticker)
+        avg_price = float(upbit.get_balances()[-1]["avg_buy_price"])
+        if (current_price < avg_price * 0.98):
+            sell_crypto_currency(ticker)
+        time.sleep(1)
 
 
+    except Exception as e:
+        print(e)
 
-    # except:
-    #     print("ERROR!!!!")
-    #     break
-
-    time.sleep(1)
+        time.sleep(1)
 
