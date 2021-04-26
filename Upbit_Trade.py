@@ -53,12 +53,16 @@ def buy_crypto_currency(ticker):
     unit = krw/float(sell_price)
     upbit.buy_limit_order(ticker, sell_price, unit)
 
+    print(f"BUYING: {sell_price}")
+
 def sell_crypto_currency(ticker):
     orderbook = pyupbit.get_orderbook(ticker)
     bid_price = orderbook[0]["orderbook_units"][0]["bid_price"]
     unit = upbit.get_balances()[-1]["balance"]
 
     upbit.sell_limit_order(ticker, bid_price, unit)
+
+    print(f"SELL: {bid_price}")
 
 def get_yesterday_ma(ticker, days, interval = "day"):
     df = pyupbit.get_ohlcv(ticker, interval = interval)
@@ -72,6 +76,17 @@ def get_start_time(ticker):
     df = pyupbit.get_ohlcv(ticker, interval="day", count=1)
     start_time = df.index[0]
     return start_time
+
+def get_balance(ticker):
+    """잔고 조회"""
+    balances = upbit.get_balances()
+    for b in balances:
+        if b['currency'] == ticker:
+            if b['balance'] is not None:
+                return float(b['balance'])
+            else:
+                return 0
+
 
 #%%
 # ticker = "KRW-DOGE"
@@ -89,16 +104,16 @@ k = 0.15
 
 target_price = get_target_price(ticker = ticker, k = k)
 
-time_now = datetime.datetime.now()
-time_midnight = datetime.datetime(time_now.year, time_now.month, time_now.day) + datetime.timedelta(1)
+# time_now = datetime.datetime.now()
+# time_midnight = datetime.datetime(time_now.year, time_now.month, time_now.day) + datetime.timedelta(1)
 
 while True:
     try:
-        time_now = datetime.datetime.now()
-        start_tim = get_start_time(ticker)
+        now = datetime.datetime.now()
+        start_time = get_start_time(ticker)
         end_time = start_time + datetime.timedelta(days = 1)
 
-        if start_time < time_now < end_time - datetime.timedelta(seconds = 10):
+        if start_time < now < end_time - datetime.timedelta(seconds=10):
             target_price = get_target_price(ticker, k = k)
             print(f"TARGET PRICE: {target_price}")
 
@@ -106,18 +121,17 @@ while True:
 
         current_price = pyupbit.get_current_price(ticker)
         if (current_price >= target_price) & (current_price >= get_yesterday_ma(ticker, 5)):
-            krw = get_balance("KRW")
-            if krw > 5000:
+            if get_balance("KRW") > 5000:
                 buy_crypto_currency(ticker)
 
         avg_price = float(upbit.get_balances()[-1]["avg_buy_price"])
         if (current_price < avg_price * 0.98):
             sell_crypto_currency(ticker)
-        time.sleep(1)
 
 
-    except Exception as e:
-        print(e)
+    except:
+        print("ERROR!!!!")
+        break
 
-        time.sleep(1)
+    time.sleep(1)
 
