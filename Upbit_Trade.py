@@ -117,21 +117,22 @@ while True:
             target_price = get_target_price(ticker, k = k)
             print(f"TARGET PRICE: {target_price}")
 
-            sell_crypto_currency(ticker)
 
-        current_price = pyupbit.get_current_price(ticker)
-        if (current_price >= target_price) & (current_price >= get_yesterday_ma(ticker, 5)):
-            if get_balance("KRW") > 5000:
-                buy_crypto_currency(ticker)
+
+            current_price = pyupbit.get_current_price(ticker)
+            if (current_price >= target_price) & (current_price >= get_yesterday_ma(ticker, 5)):
+                if get_balance("KRW") > 5000:
+                    buy_crypto_currency(ticker)
+
+        else: sell_crypto_currency(ticker)
 
         avg_price = float(upbit.get_balances()[-1]["avg_buy_price"])
-        if (current_price < avg_price * 0.98):
+        if (pyupbit.get_current_price(ticker) < avg_price * 0.98):
             sell_crypto_currency(ticker)
 
 
-    except:
-        print("ERROR!!!!")
-        break
+    except Exception as e:
+        print(e)
 
     time.sleep(1)
 
