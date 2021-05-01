@@ -89,8 +89,8 @@ def get_balance(ticker):
 
 
 #%%
-# ticker = "KRW-DOGE"
-# k = 0.525
+ticker = "KRW-DOGE"
+k = 0.15
 
 # ticker = "KRW-XRP"
 # k = 0.225
@@ -98,8 +98,8 @@ def get_balance(ticker):
 # ticker = "KRW-MBL"
 # k = 0.125
 
-ticker = "KRW-MVL"
-k = 0.15
+# ticker = "KRW-MVL"
+# k = 0.15
 
 
 target_price = get_target_price(ticker = ticker, k = k)
